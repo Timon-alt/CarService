@@ -21,73 +21,81 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.carservice.data.appModule
 import com.example.carservice.ui.theme.MainTheme
+import org.koin.compose.KoinApplication
+import org.koin.core.KoinApplication
+import org.koin.dsl.koinConfiguration
 
 @Composable
 fun CarServiceApp(modifier: Modifier = Modifier) {
-    val navController = rememberNavController()
-    val startDestination = Destination.HOME
+    KoinApplication(configuration = koinConfiguration {
+        modules(appModule)
+    }) {
+        val navController = rememberNavController()
+        val startDestination = Destination.HOME
 
-    // Состояние для управления видимостью BottomBar
-    var isBottomBarVisible by remember { mutableStateOf(true) }
+        // Состояние для управления видимостью BottomBar
+        var isBottomBarVisible by remember { mutableStateOf(true) }
 
-    // Используем currentBackStackEntryAsState для отслеживания текущего маршрута
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+        // Используем currentBackStackEntryAsState для отслеживания текущего маршрута
+        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
-    // Определяем выбранный пункт на основе текущего маршрута
-    val selectedDestination = Destination.entries.find { it.route == currentRoute }?.ordinal
-        ?: startDestination.ordinal
+        // Определяем выбранный пункт на основе текущего маршрута
+        val selectedDestination = Destination.entries.find { it.route == currentRoute }?.ordinal
+            ?: startDestination.ordinal
 
-    Scaffold(
-        modifier = modifier,
-        containerColor = MainTheme.colors.singleTheme,
-        bottomBar = {
-            // Показываем BottomBar только если он видим и мы на нужных экранах
-            if (isBottomBarVisible && currentRoute in listOf(
-                    Destination.HOME.route,
-                    Destination.HISTORY.route,
-                    Destination.PROFILE.route
-                )) {
-                NavigationBar(
-                    windowInsets = NavigationBarDefaults.windowInsets,
-                    contentColor = MainTheme.colors.mainColor,
-                    containerColor = MainTheme.colors.navigationBar
-                ) {
-                    Destination.entries.forEachIndexed { index, destination ->
-                        NavigationBarItem(
-                            selected = selectedDestination == index,
-                            onClick = {
-                                if (currentRoute != destination.route) {
-                                    navController.navigate(destination.route) {
-                                        popUpTo(navController.graph.startDestinationId) {
-                                            saveState = true
+        Scaffold(
+            modifier = modifier,
+            containerColor = MainTheme.colors.singleTheme,
+            bottomBar = {
+                // Показываем BottomBar только если он видим и мы на нужных экранах
+                if (isBottomBarVisible && currentRoute in listOf(
+                        Destination.HOME.route,
+                        Destination.HISTORY.route,
+                        Destination.PROFILE.route
+                    )) {
+                    NavigationBar(
+                        windowInsets = NavigationBarDefaults.windowInsets,
+                        contentColor = MainTheme.colors.mainColor,
+                        containerColor = MainTheme.colors.navigationBar
+                    ) {
+                        Destination.entries.forEachIndexed { index, destination ->
+                            NavigationBarItem(
+                                selected = selectedDestination == index,
+                                onClick = {
+                                    if (currentRoute != destination.route) {
+                                        navController.navigate(destination.route) {
+                                            popUpTo(navController.graph.startDestinationId) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
                                         }
-                                        launchSingleTop = true
-                                        restoreState = true
                                     }
-                                }
-                            },
-                            icon = {
-                                Icon(
-                                    destination.icon,
-                                    contentDescription = destination.contentDescription
-                                )
-                            },
-                            label = { Text(destination.label) }
-                        )
+                                },
+                                icon = {
+                                    Icon(
+                                        destination.icon,
+                                        contentDescription = destination.contentDescription
+                                    )
+                                },
+                                label = { Text(destination.label) }
+                            )
+                        }
                     }
                 }
             }
+        ) { contentPadding ->
+            AppNavHost(
+                navController,
+                startDestination,
+                onBottomBarVisibilityChange = { isVisible ->
+                    isBottomBarVisible = isVisible
+                },
+                modifier = Modifier.padding(contentPadding)
+            )
         }
-    ) { contentPadding ->
-        AppNavHost(
-            navController,
-            startDestination,
-            onBottomBarVisibilityChange = { isVisible ->
-                isBottomBarVisible = isVisible
-            },
-            modifier = Modifier.padding(contentPadding)
-        )
     }
 }
 

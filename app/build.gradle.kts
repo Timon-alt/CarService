@@ -39,10 +39,21 @@ android {
 }
 
 dependencies {
+    // Navigation
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    // Icons
     implementation(libs.androidx.compose.material.iconsExtended)
-
+    // Koin
+    implementation(libs.koin.androidx.compose)
+    // Supabase
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.postgrest.kt)
+    // Ktor
+    implementation(libs.ktor.client.android)
+    // Coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

@@ -14,6 +14,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.carservice.ui.CarServiceApp
 import com.example.carservice.ui.theme.CarServiceTheme
 import com.example.carservice.ui.theme.MainTheme
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
