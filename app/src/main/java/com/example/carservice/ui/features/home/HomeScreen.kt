@@ -1,6 +1,5 @@
-package com.example.carservice.ui
+package com.example.carservice.ui.features.home
 
-import android.R.attr.type
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

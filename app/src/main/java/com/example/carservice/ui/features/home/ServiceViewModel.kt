@@ -1,9 +1,9 @@
-package com.example.carservice.ui
+package com.example.carservice.ui.features.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.carservice.data.Service
-import com.example.carservice.data.ServiceRepository
+import com.example.carservice.domain.model.Service
+import com.example.carservice.domain.repository.ServiceRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
