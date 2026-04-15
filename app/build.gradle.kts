@@ -39,6 +39,8 @@ android {
 }
 
 dependencies {
+    // Calendar
+    implementation(libs.kizitonwose.calendar)
     // Navigation
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)

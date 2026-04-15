@@ -179,7 +179,7 @@ fun HomeScreenNavHost(
         composable(HomeRoutes.CarMaintenance.route) {
             CarMaintenanceScreen(
                 onBack = {
-                    navController.popBackStack()
+                    navController.navigateUp()
                 },
                 modifier = modifier
             )
@@ -209,4 +209,5 @@ sealed class HomeRoutes(val route: String) {
     object Service : HomeRoutes("service/{serviceName}") {
         fun passName(serviceName: String): String = "service/$serviceName"
     }
+
 }

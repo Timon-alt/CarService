@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Service(
-    val id: Int? = null,
+    val id: Int,
     val name: String,
     val description: String,
     val price: Double,

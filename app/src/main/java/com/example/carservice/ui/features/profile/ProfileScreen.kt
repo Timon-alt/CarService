@@ -27,6 +27,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.carservice.R
 import com.example.carservice.ui.features.profile.ProfileViewModel
 import com.example.carservice.ui.features.auth.AuthViewModel
@@ -34,7 +38,16 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ProfileScreen(modifier: Modifier = Modifier) {
+    ProfileNavHost(modifier = modifier)
+}
 
+@Composable
+fun ProfileMainScreen(
+    modifier: Modifier = Modifier,
+    onNavigateToThemeSettings: () -> Unit = {},
+    onNavigateToEditProfile: () -> Unit = {},
+    onNavigateToCars: () -> Unit = {},
+) {
     val authViewModel: AuthViewModel = koinViewModel()
     val profileViewModel: ProfileViewModel = koinViewModel()
     val uiState by profileViewModel.uiState.collectAsState()
@@ -48,6 +61,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             fontWeight = FontWeight.Bold,
             fontSize = 32.sp
         )
+
         // Отображаем индикатор загрузки или данные
         if (uiState.isLoading) {
             Row(
@@ -74,14 +88,12 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                         .clip(CircleShape)
                 )
 
-                // Отображаем ФИО (имя и фамилию вместе)
                 Column {
                     Text(
                         text = "${uiState.customer?.firstName ?: ""} ${uiState.customer?.lastName ?: ""}".trim(),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
-                    // Отображаем номер телефона чуть ниже
                     if (!uiState.customer?.phone.isNullOrBlank()) {
                         Text(
                             text = uiState.customer?.phone ?: "",
@@ -91,44 +103,91 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                     }
                 }
             }
+        }
 
-            Column(
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Настройки",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp
+            )
+
+            TextButton(
+                onClick = onNavigateToEditProfile,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "Настройки",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp
-                )
-                TextButton(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "Изменить данные")
-                }
-                TextButton(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "Изменить тему")
-                }
-                TextButton(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "Автомобили")
-                }
-                TextButton(
-                    onClick = { authViewModel.signOut() },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ExitToApp,
-                        contentDescription = ""
-                    )
-                    Text(text = "Выйти из Аккаунта")
-                }
+                Text(text = "Изменить данные")
             }
+
+            TextButton(
+                onClick = onNavigateToThemeSettings,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Изменить тему")
+            }
+
+            TextButton(
+                onClick = onNavigateToCars,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Автомобили")
+            }
+
+            TextButton(
+                onClick = { authViewModel.signOut() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ExitToApp,
+                    contentDescription = ""
+                )
+                Text(text = "Выйти из Аккаунта")
+            }
+        }
+    }
+}
+
+sealed class ProfileDestination(val route: String) {
+    object Main : ProfileDestination("profile_main")
+    object ThemeSettings : ProfileDestination("profile_theme_settings")
+    object  Garage : ProfileDestination("profile_garage")
+}
+
+@Composable
+fun ProfileNavHost(
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = ProfileDestination.Main.route
+) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier
+    ) {
+        composable(ProfileDestination.Main.route) {
+            ProfileMainScreen(
+                onNavigateToThemeSettings = {
+                    navController.navigate(ProfileDestination.ThemeSettings.route)
+                },
+                onNavigateToCars = {
+                    navController.navigate(ProfileDestination.Garage.route)
+                }
+            )
+        }
+
+        composable(ProfileDestination.ThemeSettings.route) {
+            ThemeSettingsScreen(
+                onBackPressed = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(ProfileDestination.Garage.route) {
+            GarageScreen(
+                onBackPressed = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

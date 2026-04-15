@@ -162,6 +162,14 @@ class AuthViewModel(
             authRepository.signOut()
         }
     }
+
+    fun updateError(message: String) {
+        _uiState.value = _uiState.value.copy(error = message)
+    }
+
+    fun getCurrentUserId(): String? {
+        return authRepository.currentUserId
+    }
 }
 
 data class AuthUiState(

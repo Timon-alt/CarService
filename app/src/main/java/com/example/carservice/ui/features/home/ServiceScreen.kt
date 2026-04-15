@@ -17,8 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -126,9 +129,9 @@ fun ServiceListScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(end = 20.dp, top = 15.dp, bottom = 25.dp)
+            .padding(horizontal = 16.dp, vertical = 20.dp)
     ) {
-        // Шапка только для списка услуг
+        // Шапка с исправлениями
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -140,12 +143,15 @@ fun ServiceListScreen(
                     contentDescription = "Назад"
                 )
             }
-            Text(text = category)
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Поиск"
+            Text(
+                text = category,
+                fontWeight = FontWeight.Medium,
+                fontSize = 18.sp
             )
+            Spacer(modifier = Modifier.width(48.dp)) // Баланс для центрирования текста
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         when {
             uiState.isLoading -> {
@@ -161,7 +167,7 @@ fun ServiceListScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Ошибка: ${uiState.error}")
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(onClick = onRetry) {
@@ -173,7 +179,9 @@ fun ServiceListScreen(
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    modifier = Modifier.padding(top = 8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     items(uiState.services) { service ->
                         ServiceCard(
@@ -194,30 +202,27 @@ fun ServiceCard(
 ) {
     Card(
         modifier = Modifier
-            .width(125.dp)
+            .fillMaxWidth() // Теперь карточка растягивается по ширине колонки
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
+            AsyncImage(
+                model = service.image,
+                contentDescription = service.name,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(110.dp)
-                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-            ) {
-                AsyncImage(
-                    model = service.image,
-                    contentDescription = service.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            )
             Text(
                 text = service.name,
                 modifier = Modifier.padding(8.dp),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

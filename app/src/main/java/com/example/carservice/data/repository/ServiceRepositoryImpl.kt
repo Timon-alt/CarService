@@ -55,4 +55,21 @@ class ServiceRepositoryImpl(
             null
         }
     }
+
+    override suspend fun getServiceByName(name: String): Service? {
+        return try {
+            supabaseClient.postgrest
+                .from("services")
+                .select {
+                    filter {
+                        eq("name", name)
+                    }
+                }
+                .decodeList<Service>()
+                .firstOrNull()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 }

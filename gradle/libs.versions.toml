@@ -13,6 +13,7 @@ koin-bom = "4.2.0"
 supabase = "3.4.1"
 ktor = "3.4.1"
 coil = "3.4.0"
+comp = "2.10.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,7 @@ supabase-auth-kt = { module = "io.github.jan-tennert.supabase:auth-kt" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+kizitonwose-calendar = { module = "com.kizitonwose.calendar:compose", version.ref = "comp" }
 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.10.0" }
 

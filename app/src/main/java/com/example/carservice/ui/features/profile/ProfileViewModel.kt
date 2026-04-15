@@ -24,6 +24,9 @@ class ProfileViewModel(
     }
 
     fun loadUserData() {
+        // Добавьте проверку - не загружаем, если данные уже есть
+        if (_uiState.value.customer != null) return
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 

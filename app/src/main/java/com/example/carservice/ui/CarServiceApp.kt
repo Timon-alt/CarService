@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,19 +22,27 @@ import com.example.carservice.di.appModule
 import com.example.carservice.ui.features.auth.AuthScreen
 import com.example.carservice.ui.features.auth.AuthViewModel
 import com.example.carservice.ui.features.home.HomeScreen
+import com.example.carservice.ui.features.home.NotificationScreen
 import com.example.carservice.ui.features.profile.ProfileScreen
 import com.example.carservice.ui.theme.MainTheme
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.KoinApplication
 import org.koin.dsl.koinConfiguration
 
 @Composable
 fun CarServiceApp(modifier: Modifier = Modifier) {
+    val context = LocalContext.current.applicationContext
+
     KoinApplication(configuration = koinConfiguration {
+        androidContext(context)
         modules(appModule)
     }) {
         val authViewModel: AuthViewModel = koinViewModel()
         val uiState by authViewModel.uiState.collectAsState()
+
+        // Состояние для навигации между разными NavHost
+        var currentRootDestination by remember { mutableStateOf(RootDestination.HOME) }
 
         // Показываем экран загрузки, пока идет инициализация
         if (uiState.isLoading) {
@@ -128,6 +137,11 @@ fun MainAppContent(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(contentPadding)
         )
     }
+}
+
+enum class RootDestination {
+    HOME,
+    PROFILE_GARAGE
 }
 
 enum class Destination(

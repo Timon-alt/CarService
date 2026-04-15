@@ -8,4 +8,5 @@ interface ServiceRepository {
     suspend fun getAllServices(): List<Service>
     suspend fun getServiceByCategory(category: String): List<Service>
     suspend fun getServiceById(id: Int): Service?
+    suspend fun getServiceByName(name: String): Service?
 }

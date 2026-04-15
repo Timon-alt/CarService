@@ -1,5 +1,8 @@
 package com.example.carservice.ui.features.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,10 +11,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -23,11 +31,9 @@ fun DetailServiceScreen(
     onBack: () -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Шапка для детального экрана
+        // Шапка - всегда сверху, не скроллится
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,10 +54,11 @@ fun DetailServiceScreen(
             )
         }
 
-        // Контент детального экрана
+        // Скроллируемый контент
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
             Card(
@@ -88,10 +95,72 @@ fun DetailServiceScreen(
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = service.description ?: "Подробное описание услуги будет здесь...",
-                        fontSize = 16.sp
+
+                    // Разворачиваемый текст
+                    var expanded by remember { mutableStateOf(false) }
+
+                    val description = service.description ?: "Подробное описание услуги будет здесь..."
+
+                    Column {
+                        if (expanded) {
+                            // Полный текст
+                            Text(
+                                text = description,
+                                fontSize = 16.sp
+                            )
+                        } else {
+                            // Частичный текст (первые 150 символов)
+                            val truncatedText = if (description.length > 150) {
+                                description.take(150) + "..."
+                            } else {
+                                description
+                            }
+                            Text(
+                                text = truncatedText,
+                                fontSize = 16.sp
+                            )
+                        }
+
+                        // Кнопка "Читать далее/Свернуть" (только если текст длинный)
+                        if (description.length > 150) {
+                            TextButton(
+                                onClick = { expanded = !expanded },
+                                modifier = Modifier.padding(top = 4.dp)
+                            ) {
+                                Text(
+                                    text = if (expanded) "Свернуть" else "Читать далее",
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Цена под описанием
+                    Divider(
+                        modifier = Modifier.padding(vertical = 8.dp)
                     )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Стоимость услуги",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "${service.price} ₽",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }
