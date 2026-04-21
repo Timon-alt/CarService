@@ -1,34 +1,29 @@
 package com.example.carservice.ui.features.home
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -48,7 +43,8 @@ fun HomeScreen(
     val homeNavController = rememberNavController()
 
     // Следим за изменениями в навигации внутри HomeScreen
-    val currentRoute = homeNavController.currentBackStackEntryAsState().value?.destination?.route
+    val navBackStackEntry by homeNavController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     // Обновляем видимость BottomBar в зависимости от текущего маршрута
     DisposableEffect(currentRoute) {
@@ -92,8 +88,51 @@ fun HomeMainScreen(
             )
         }
 
+        // Рекламный баннер
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Box {
+                Image(
+                    painter = painterResource(id = com.example.carservice.R.drawable.avtomasterskaya_example),
+                    contentDescription = "Рекламный баннер",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                // Можно добавить текст поверх баннера
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Bottom
+                ) {
+                    Text(
+                        text = "Лучший сервис\nдля вашего авто",
+                        color = androidx.compose.ui.graphics.Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        lineHeight = 24.sp,
+                        modifier = Modifier
+                            .background(
+                                color = androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.4f),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+        }
+
         Column {
-            Text(text = "Услуги")
+            Text(
+                text = "Услуги",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
             ) {
@@ -148,7 +187,11 @@ fun CarServiceCard(name: String, image: Int, onNavigateToService: () -> Unit,) {
             Text(
                 text = name,
                 modifier = Modifier.padding(8.dp),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -162,7 +205,35 @@ fun HomeScreenNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = HomeRoutes.Main.route
+        startDestination = HomeRoutes.Main.route,
+        enterTransition = {
+            fadeIn(animationSpec = tween(300)) +
+                    slideIntoContainer(
+                        animationSpec = tween(300),
+                        towards = AnimatedContentTransitionScope.SlideDirection.Start
+                    )
+        },
+        exitTransition = {
+            fadeOut(animationSpec = tween(300)) +
+                    slideOutOfContainer(
+                        animationSpec = tween(300),
+                        towards = AnimatedContentTransitionScope.SlideDirection.End
+                    )
+        },
+        popEnterTransition = {
+            fadeIn(animationSpec = tween(300)) +
+                    slideIntoContainer(
+                        animationSpec = tween(300),
+                        towards = AnimatedContentTransitionScope.SlideDirection.End
+                    )
+        },
+        popExitTransition = {
+            fadeOut(animationSpec = tween(300)) +
+                    slideOutOfContainer(
+                        animationSpec = tween(300),
+                        towards = AnimatedContentTransitionScope.SlideDirection.Start
+                    )
+        }
     ) {
         composable(HomeRoutes.Main.route) {
             HomeMainScreen(
