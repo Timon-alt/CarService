@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.carservice.di.appModule
 import com.example.carservice.ui.features.auth.AuthScreen
 import com.example.carservice.ui.features.auth.AuthViewModel
+import com.example.carservice.ui.features.history.HistoryScreen
 import com.example.carservice.ui.features.home.HomeScreen
 import com.example.carservice.ui.features.home.NotificationScreen
 import com.example.carservice.ui.features.profile.ProfileScreen
@@ -174,8 +175,8 @@ fun AppNavHost(
         }
 
         composable(Destination.HISTORY.route) {
-            NotificationScreen(
-                modifier = modifier
+            HistoryScreen(
+
             )
         }
 

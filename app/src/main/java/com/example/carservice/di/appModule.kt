@@ -15,6 +15,7 @@ import com.example.carservice.domain.repository.ThemeRepository
 import com.example.carservice.domain.usecase.GetThemeModeUseCase
 import com.example.carservice.domain.usecase.SetThemeModeUseCase
 import com.example.carservice.ui.features.auth.AuthViewModel
+import com.example.carservice.ui.features.history.HistoryViewModel
 import com.example.carservice.ui.features.home.CarMaintenanceViewModel
 import com.example.carservice.ui.features.profile.ProfileViewModel
 import com.example.carservice.ui.features.home.ServiceViewModel
@@ -125,6 +126,16 @@ val appModule = module {
             customerRepository = get(),
             serviceRepository = get(),
             orderRepository = get()
+        )
+    }
+
+    viewModel {
+        HistoryViewModel(
+            authRepository = get(),
+            orderRepository = get(),
+            carsRepository = get(),
+            customerRepository = get(),
+            serviceRepository = get()
         )
     }
 }
