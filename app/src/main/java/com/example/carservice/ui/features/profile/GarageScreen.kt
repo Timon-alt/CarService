@@ -1,61 +1,30 @@
 package com.example.carservice.ui.features.profile
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.carservice.domain.model.Cars
 import com.example.carservice.ui.commons.AddCarBottomSheet
 import com.example.carservice.ui.theme.MainTheme
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GarageScreen(
     onBackPressed: () -> Unit,
@@ -65,7 +34,6 @@ fun GarageScreen(
     var showAddCarSheet by remember { mutableStateOf(false) }
     var showDeleteConfirmation by remember { mutableStateOf<Int?>(null) }
 
-    // Очищаем ошибку при появлении
     LaunchedEffect(uiState.error) {
         if (uiState.error != null) {
             kotlinx.coroutines.delay(3000)
@@ -75,106 +43,59 @@ fun GarageScreen(
 
     Scaffold(
         containerColor = MainTheme.colors.singleTheme,
-        topBar = {
-            TopAppBar(
-                title = { Text("Гараж", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBackIosNew,
-                            contentDescription = "Назад"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MainTheme.colors.navigationBar
-                ),
-                modifier = Modifier.statusBarsPadding(),
-                windowInsets = WindowInsets.statusBars
-            )
-        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddCarSheet = true },
-                containerColor = MainTheme.colors.mainColor
+                containerColor = MainTheme.colors.mainColor,
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Text("+", fontSize = 24.sp)
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Добавить",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
-            when {
-                uiState.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = MainTheme.colors.mainColor)
-                    }
-                }
+            // Прозрачная шапка
+            GarageHeader(onBack = onBackPressed)
 
-                uiState.error != null -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = uiState.error!!,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { viewModel.refreshCars() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MainTheme.colors.mainColor
-                            )
-                        ) {
-                            Text("Повторить")
+            Box(
+                modifier = Modifier.weight(1f)
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = MainTheme.colors.mainColor)
                         }
                     }
-                }
 
-                uiState.cars.isEmpty() -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "У вас пока нет автомобилей",
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Нажмите на кнопку + чтобы добавить",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    uiState.error != null -> {
+                        ErrorState(error = uiState.error!!, onRetry = { viewModel.refreshCars() })
                     }
-                }
 
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(uiState.cars) { car ->
-                            CarCard(
-                                car = car,
-                                onDelete = { showDeleteConfirmation = car.id }
-                            )
+                    uiState.cars.isEmpty() -> {
+                        EmptyState()
+                    }
+
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(uiState.cars) { car ->
+                                CarCard(
+                                    car = car,
+                                    onDelete = { showDeleteConfirmation = car.id }
+                                )
+                            }
                         }
                     }
                 }
@@ -182,83 +103,84 @@ fun GarageScreen(
         }
     }
 
-    // BottomSheet для добавления автомобиля
     if (showAddCarSheet) {
         AddCarBottomSheet(
             onCarAdded = { brand, model, vin ->
-                viewModel.addCar(brand, model, vin) {
-                    showAddCarSheet = false
-                }
+                viewModel.addCar(brand, model, vin) { showAddCarSheet = false }
             },
             onDismiss = { showAddCarSheet = false }
         )
     }
 
-    // Диалог подтверждения удаления
     if (showDeleteConfirmation != null) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirmation = null },
-            title = { Text("Удаление автомобиля") },
-            text = { Text("Вы уверены, что хотите удалить этот автомобиль?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteCar(showDeleteConfirmation!!)
-                        showDeleteConfirmation = null
-                    }
-                ) {
-                    Text("Удалить", color = MaterialTheme.colorScheme.error)
-                }
+        DeleteConfirmationDialog(
+            onConfirm = {
+                viewModel.deleteCar(showDeleteConfirmation!!)
+                showDeleteConfirmation = null
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirmation = null }) {
-                    Text("Отмена")
-                }
-            },
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false
-            )
+            onDismiss = { showDeleteConfirmation = null }
         )
     }
 }
 
 @Composable
-fun CarCard(
-    car: Cars,
-    onDelete: () -> Unit
-) {
+fun GarageHeader(onBack: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onBack) {
+            Icon(
+                imageVector = Icons.Default.ArrowBackIosNew,
+                contentDescription = "Назад"
+            )
+        }
+        Text(
+            text = "Гараж",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 8.dp)
+        )
+    }
+}
+
+@Composable
+fun CarCard(car: Cars, onDelete: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MainTheme.colors.navigationBar
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MainTheme.colors.navigationBar),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Иконка авто с фиксированным размером
-            Icon(
-                imageVector = Icons.Default.DirectionsCar,
-                contentDescription = "Иконка автомобиля",
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            // Информация об авто
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MainTheme.colors.mainColor.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
             ) {
+                Icon(
+                    imageVector = Icons.Default.DirectionsCar,
+                    contentDescription = null,
+                    tint = MainTheme.colors.mainColor,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "${car.brand} ${car.model}",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = MainTheme.colors.mainColor
+                    fontSize = 18.sp
                 )
                 Text(
                     text = "VIN: ${car.vin}",
@@ -267,14 +189,60 @@ fun CarCard(
                 )
             }
 
-            // Кнопка удаления
             IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Удалить",
-                    tint = MaterialTheme.colorScheme.error
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
                 )
             }
         }
     }
+}
+
+@Composable
+fun ErrorState(error: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = error, color = MaterialTheme.colorScheme.error)
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = onRetry,
+            colors = ButtonDefaults.buttonColors(containerColor = MainTheme.colors.mainColor)
+        ) {
+            Text("Повторить")
+        }
+    }
+}
+
+@Composable
+fun EmptyState() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("У вас пока нет автомобилей", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Нажмите на кнопку +, чтобы добавить", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+fun DeleteConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Удаление") },
+        text = { Text("Вы уверены, что хотите удалить этот автомобиль из гаража?") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Удалить", color = MaterialTheme.colorScheme.error)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Отмена") }
+        }
+    )
 }

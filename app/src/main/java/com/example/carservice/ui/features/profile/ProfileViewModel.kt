@@ -24,9 +24,6 @@ class ProfileViewModel(
     }
 
     fun loadUserData() {
-        // Добавьте проверку - не загружаем, если данные уже есть
-        if (_uiState.value.customer != null) return
-
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
@@ -44,7 +41,7 @@ class ProfileViewModel(
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     customer = customer,
-                    email = authRepository.currentUserEmail ?: "",  // Используем новое свойство
+                    email = authRepository.currentUserEmail ?: "",
                     isEditMode = false
                 )
             }.onFailure { exception ->
@@ -57,21 +54,15 @@ class ProfileViewModel(
     }
 
     fun updateFirstName(firstName: String) {
-        _uiState.value = _uiState.value.copy(
-            editFirstName = firstName
-        )
+        _uiState.value = _uiState.value.copy(editFirstName = firstName)
     }
 
     fun updateLastName(lastName: String) {
-        _uiState.value = _uiState.value.copy(
-            editLastName = lastName
-        )
+        _uiState.value = _uiState.value.copy(editLastName = lastName)
     }
 
     fun updatePhone(phone: String) {
-        _uiState.value = _uiState.value.copy(
-            editPhone = phone
-        )
+        _uiState.value = _uiState.value.copy(editPhone = phone)
     }
 
     fun toggleEditMode() {
@@ -89,21 +80,36 @@ class ProfileViewModel(
     }
 
     fun saveChanges() {
-        viewModelScope.launch {
-            val userId = authRepository.currentUserId ?: return@launch
+        val currentState = _uiState.value
+        val customer = currentState.customer ?: return
 
+        viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
+            // Формируем запрос на обновление.
+            // Если поле пустое или совпадает с текущим, передаем null (Supabase пропустит это поле при PATCH запросе)
             val updateRequest = UpdateCustomerRequest(
-                firstName = _uiState.value.editFirstName,
-                lastName = _uiState.value.editLastName,
-                phone = _uiState.value.editPhone.takeIf { it.isNotBlank() }
+                firstName = if (currentState.editFirstName.isNotBlank() && currentState.editFirstName != customer.firstName) {
+                    currentState.editFirstName
+                } else null,
+                
+                lastName = if (currentState.editLastName.isNotBlank() && currentState.editLastName != customer.lastName) {
+                    currentState.editLastName
+                } else null,
+                
+                phone = if (currentState.editPhone != (customer.phone ?: "")) {
+                    currentState.editPhone.ifBlank { null } // Позволяем удалить телефон (сделать null), если стерли
+                } else null
             )
 
-            val result = customerRepository.updateCustomer(
-                userId,
-                updateRequest
-            )
+            // Если ничего не изменилось, просто выходим из режима редактирования
+            if (updateRequest.firstName == null && updateRequest.lastName == null && updateRequest.phone == null) {
+                _uiState.value = _uiState.value.copy(isLoading = false, isEditMode = false)
+                return@launch
+            }
+
+            val userId = authRepository.currentUserId ?: return@launch
+            val result = customerRepository.updateCustomer(userId, updateRequest)
 
             result.onSuccess { updatedCustomer ->
                 _uiState.value = _uiState.value.copy(

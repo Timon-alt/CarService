@@ -12,55 +12,35 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.carservice.di.appModule
 import com.example.carservice.ui.features.auth.AuthScreen
 import com.example.carservice.ui.features.auth.AuthViewModel
 import com.example.carservice.ui.features.history.HistoryScreen
 import com.example.carservice.ui.features.home.HomeScreen
-import com.example.carservice.ui.features.home.NotificationScreen
 import com.example.carservice.ui.features.profile.ProfileScreen
 import com.example.carservice.ui.theme.MainTheme
-import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.KoinApplication
-import org.koin.dsl.koinConfiguration
 
 @Composable
 fun CarServiceApp(modifier: Modifier = Modifier) {
-    val context = LocalContext.current.applicationContext
+    // Koin теперь инициализируется в MainActivity, здесь мы просто получаем ViewModel
+    val authViewModel: AuthViewModel = koinViewModel()
+    val uiState by authViewModel.uiState.collectAsState()
 
-    KoinApplication(configuration = koinConfiguration {
-        androidContext(context)
-        modules(appModule)
-    }) {
-        val authViewModel: AuthViewModel = koinViewModel()
-        val uiState by authViewModel.uiState.collectAsState()
-
-        // Состояние для навигации между разными NavHost
-        var currentRootDestination by remember { mutableStateOf(RootDestination.HOME) }
-
-        // Показываем экран загрузки, пока идет инициализация
-        if (uiState.isLoading) {
-            // Экран загрузки
-            LoadingScreen(modifier = modifier)
-        } else if (!uiState.isAuthenticated) {
-            // Показываем экран авторизации
-            AuthScreen(
-                onAuthenticated = {
-                    // После успешной авторизации просто обновляем состояние
-                },
-                modifier = modifier
-            )
-        } else {
-            // Показываем основное приложение
-            MainAppContent(modifier = modifier)
-        }
+    // Показываем экран загрузки, пока идет инициализация
+    if (uiState.isLoading) {
+        LoadingScreen(modifier = modifier)
+    } else if (!uiState.isAuthenticated) {
+        AuthScreen(
+            onAuthenticated = { },
+            modifier = modifier
+        )
+    } else {
+        MainAppContent(modifier = modifier)
     }
 }
 
@@ -82,7 +62,6 @@ fun MainAppContent(modifier: Modifier = Modifier) {
     val startDestination = Destination.HOME
 
     var isBottomBarVisible by remember { mutableStateOf(true) }
-
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     val selectedDestination = Destination.entries.find { it.route == currentRoute }?.ordinal
@@ -98,7 +77,6 @@ fun MainAppContent(modifier: Modifier = Modifier) {
                     Destination.PROFILE.route
                 )) {
                 NavigationBar(
-                    windowInsets = NavigationBarDefaults.windowInsets,
                     contentColor = MainTheme.colors.mainColor,
                     containerColor = MainTheme.colors.navigationBar
                 ) {
@@ -140,11 +118,6 @@ fun MainAppContent(modifier: Modifier = Modifier) {
     }
 }
 
-enum class RootDestination {
-    HOME,
-    PROFILE_GARAGE
-}
-
 enum class Destination(
     val route: String,
     val label: String,
@@ -175,9 +148,7 @@ fun AppNavHost(
         }
 
         composable(Destination.HISTORY.route) {
-            HistoryScreen(
-
-            )
+            HistoryScreen()
         }
 
         composable(Destination.PROFILE.route) {
