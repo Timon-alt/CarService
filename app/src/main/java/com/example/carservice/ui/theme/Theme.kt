@@ -55,7 +55,7 @@ fun MainTheme(
     val materialColorScheme = if (darkTheme) {
         darkColorScheme(
             primary = colors.mainColor,
-            onPrimary = colors.onMainColor, // Белый текст на кнопках
+            onPrimary = colors.onMainColor,
             surface = colors.singleTheme,
             background = colors.singleTheme,
             onSurface = colors.oppositeTheme,
@@ -66,7 +66,7 @@ fun MainTheme(
     } else {
         lightColorScheme(
             primary = colors.mainColor,
-            onPrimary = colors.onMainColor, // Белый текст на кнопках (исправлено!)
+            onPrimary = colors.onMainColor,
             surface = colors.singleTheme,
             background = colors.singleTheme,
             onSurface = colors.oppositeTheme,
